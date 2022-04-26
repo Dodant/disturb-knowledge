@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
 import pytorch_lightning as pl
 from pl_bolts.callbacks import PrintTableMetricsCallback
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torchmetrics import MetricCollection, MeanMetric, Accuracy
 
 warnings.filterwarnings(action='ignore')
@@ -28,6 +29,7 @@ class ResNet_KD(pl.LightningModule):
         self.best_acc1, self.best_acc5, self.best_epoch = 0.0, 0.0, 0
 
         self.sched = torch.optim.lr_scheduler.CosineAnnealingLR(self.configure_optimizers(), T_max=400)
+        # 수동으로 떨어트려라.
 
     def forward(self, x):
         return self.student(x)
@@ -39,8 +41,8 @@ class ResNet_KD(pl.LightningModule):
         return F.kl_div(F.log_softmax(student_logit / T, dim=1), F.softmax(teacher_logit / T, dim=1))
 
     def FinalLoss(self, student_logit, teacher_logit, labels, T):
-        return (1. - self.hparams.alpha) * F.cross_entropy(student_logit, labels) + \
-               (self.hparams.alpha * T * T) * self.distillation_loss(student_logit, teacher_logit, T)
+        return self.hparams.alpha * F.cross_entropy(student_logit, labels) + \
+               (1. - self.hparams.alpha) * T * T * self.distillation_loss(student_logit, teacher_logit, T)
 
     # STEP
     def training_step(self, batch, batch_idx):
@@ -49,7 +51,7 @@ class ResNet_KD(pl.LightningModule):
         with torch.no_grad():
             teacher_logit = self.teacher(inputs)
         student_logit = self.student(inputs)
-        loss = self.FinalLoss(student_logit, teacher_logit, labels)
+        loss = self.FinalLoss(student_logit, teacher_logit, labels, self.hparams.T)
         self.train_metrics['loss'](loss)
         if self.trainer.is_last_batch and (self.trainer.current_epoch + 1) % 1 == 0:
             self.sched.step()
@@ -62,7 +64,7 @@ class ResNet_KD(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         inputs, labels = batch
         student_logit, teacher_logit = self.student(inputs), self.teacher(inputs)
-        loss = self.FinalLoss(student_logit, teacher_logit, labels)
+        loss = self.FinalLoss(student_logit, teacher_logit, labels, self.hparams.T)
         self.valid_metrics['loss'](loss)
         return {'loss': loss,
                 'progress_bar':
@@ -128,31 +130,29 @@ class ResNet_KD(pl.LightningModule):
     def val_dataloader(self):
         return DataLoader(self.dataset_valid, batch_size=self.hparams.batch, num_workers=4, pin_memory=True)
 
-    # def test_dataloader(self):
-    #     return DataLoader(self.dataset_test, batch_size=128, num_workers=4, pin_memory=True)
-
 
 def kd_train_and_test(student_model, T, alpha, batch, epochs, repeat):
     acc1_list, acc5_list = [], []
-    f = open("log.txt", 'a')
+    f = open(f"log_{alpha}_{T}.txt", 'a')
     config_str = '============================================================\nCONFIG\n' \
                  f'student_model = {student_model} | alpha = {alpha}'
     print(config_str)
     f.write(config_str + '\n')
     f.close()
     for i in range(repeat):
-        f = open("log.txt", 'a')
+        f = open(f"log_{alpha}_{T}.txt", 'a')
         trial_str = f'------------------------------------------------------------\nTRIAL - {i + 1}'
         print(trial_str)
         f.write(trial_str + '\n')
         st = time.time()
         model = ResNet_KD(student_model, T, alpha, batch)
-        logger = pl.loggers.TensorBoardLogger('tb_logs', version=f'alpha_{alpha}')
+        logger = pl.loggers.TensorBoardLogger('tb_logs', name=f'baseline_{student_model}', version=f'alpha_{alpha}|{T}')
         # callback = PrintTableMetricsCallback()
         trainer = pl.Trainer(gpus=-1,
                              max_epochs=epochs,
                              weights_summary=None,
                              logger=logger,
+                             # callbacks=[EarlyStopping(monitor="Validation Loss", mode="min")]
                              # callbacks=[callback]
                              )
         trainer.fit(model)
@@ -165,9 +165,9 @@ def kd_train_and_test(student_model, T, alpha, batch, epochs, repeat):
         f.write(result_str)
         f.close()
 
-    f = open("log.txt", 'a')
+    f = open(f"log_{alpha}_{T}.txt", 'a')
     summary_str = f'Top1 Acc - best (avg±std): {max(acc1_list):.2f} ({mean(acc1_list):.2f}±{stdev(acc1_list):.2f})\n'\
-                  f'Top5 Acc - best (avg±std): {max(acc5_list):.2f} ({mean(acc5_list):.2f}±{stdev(acc5_list):.2f})\n'
+                  f'Top5 Acc - best (avg±std): {max(acc5_list):.2f} ({mean(acc5_list):.2f}±{stdev(acc5_list):.2f})\n\n'
     print(summary_str)
     f.write(summary_str)
     f.close()
