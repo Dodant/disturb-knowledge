@@ -1,0 +1,15 @@
+2022-04-27 15:41:43,306	INFO	torchdistill.common.main_util	Not using distributed mode
+2022-04-27 15:41:43,306	INFO	__main__	Namespace(adjust_lr=False, config='configs/sample/cifar10/mix/resnet20_from_densenet_bc_k12_depth100-mix.yaml', device='cuda', dist_url='env://', log='log/cifar10/mix/test.log', log_config=False, seed=None, start_epoch=0, student_only=False, test_only=False, world_size=1)
+2022-04-27 15:41:43,315	INFO	torchdistill.datasets.util	Loading train data
+2022-04-27 15:41:43,833	INFO	torchdistill.datasets.util	dataset_id `cifar10/train`: 0.5178337097167969 sec
+2022-04-27 15:41:43,833	INFO	torchdistill.datasets.util	Loading val data
+2022-04-27 15:41:44,265	INFO	torchdistill.datasets.util	dataset_id `cifar10/val`: 0.4324815273284912 sec
+2022-04-27 15:41:44,265	INFO	torchdistill.datasets.util	Loading test data
+2022-04-27 15:41:44,689	INFO	torchdistill.datasets.util	dataset_id `cifar10/test`: 0.42371654510498047 sec
+2022-04-27 15:41:44,761	INFO	torchdistill.common.main_util	ckpt file is not found at `./resource/ckpt/cifar10/teacher/cifar10-densenet_bc_k12_depth100.pt`
+2022-04-27 15:41:46,653	INFO	torchdistill.common.main_util	Loading model parameters
+2022-04-27 15:41:46,657	INFO	__main__	Start training
+2022-04-27 15:41:46,657	INFO	torchdistill.models.util	[teacher model]
+2022-04-27 15:41:46,657	INFO	torchdistill.models.util	Using the original teacher model
+2022-04-27 15:41:46,657	INFO	torchdistill.models.util	[student model]
+2022-04-27 15:41:46,657	INFO	torchdistill.models.util	Using the original student model
