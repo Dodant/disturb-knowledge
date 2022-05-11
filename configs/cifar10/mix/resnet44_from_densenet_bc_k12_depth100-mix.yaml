@@ -53,12 +53,12 @@ models:
     experiment: &teacher_experiment !join [*dataset_name, '-', *teacher_model_name]
     ckpt: !join ['./resource/ckpt/', *dataset_name, '/teacher/', *teacher_experiment, '.pt']
   student_model:
-    name: &student_model_name 'resnet20'
+    name: &student_model_name 'resnet44'
     params:
       num_classes: 10
       pretrained: False
     experiment: &student_experiment !join [*dataset_name, '-', *student_model_name, '_from_', *teacher_model_name]
-    ckpt: !join ['./resource/ckpt/', *dataset_name, '/kd/', *student_experiment, '-final_run.pt']
+    ckpt: !join ['./resource/ckpt/', *dataset_name, '/mix/', *student_experiment, '-30.pt']
 
 train:
   log_freq: 100
@@ -67,13 +67,13 @@ train:
     dataset_id: *cifar10_train
     random_sample: True
     batch_size: 128
-    num_workers: 16
+    num_workers: 12
     cache_output:
   val_data_loader:
     dataset_id: *cifar10_val
     random_sample: False
     batch_size: 128
-    num_workers: 16
+    num_workers: 12
   teacher:
     sequential: []
     wrapper: 'DataParallel'
@@ -116,4 +116,4 @@ test:
     dataset_id: *cifar10_test
     random_sample: False
     batch_size: 1
-    num_workers: 16
+    num_workers: 12
