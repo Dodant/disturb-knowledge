@@ -1,4 +1,6 @@
 # DisturbKnowledge
+## Method Overview
+![Screenshot from 2022-06-20 11-14-12](https://user-images.githubusercontent.com/20153952/174513557-f7834300-c64f-4ee1-8714-21bf0204e69f.png)
 
 ## Experiment Result
 ### CIFAR-100
@@ -38,8 +40,9 @@ Student - resnet56
 |40% | 57.36 | 51.83 | 55.49 | 54.71 / 55.80 / **56.24** |
 
 ## Reference
-https://github.com/yoshitomo-matsubara/torchdistill
-https://github.com/UCSC-REAL/cores
+### Code
+* https://github.com/yoshitomo-matsubara/torchdistill
+* https://github.com/UCSC-REAL/cores
 ### Paper
 - Learning From Noisy Labels With Deep Neural Networks: A Survey
 - Learning With Instance-Dependent Label Noise: A Sample Sieve Approach
