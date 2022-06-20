@@ -4,7 +4,9 @@
 
 ## Experiment Result
 ### CIFAR-100
-Teacher - wide_resnet_40_4  
+* Teacher - wide_resnet_40_4  
+
+
 **alpha = 0.1**
 |  Student  |  w/o KD | w/ KD |  ours (noise rate = 5 / 10 / 20 / 30%) |
 |----------|----------------|---------------|-------------|
@@ -23,8 +25,10 @@ Teacher - wide_resnet_40_4
 | resnet56 | 72.13 | 73.40 | 73.16 / 73.02 / **73.46** / 72.71 |
 
 ### CIFAR-100 with Label Corruption
-Teacher - wide_resnet_40_4  
-Student - resnet56  
+* Teacher - wide_resnet_40_4  
+* Student - resnet56  
+
+
 **symmetric noise**
 |  Label Corrupt.  |  Teacher |w/o KD | w/ KD |  ours (noise rate = 10 / 20 / 30%) |
 |----------|----------------|---------------|-------------|----------|
